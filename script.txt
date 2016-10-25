@@ -1,4 +1,29 @@
 
+Create a script to monitor that if any new file is generating or if latest log file is updating on below server and path 
+
+Note – this log file is swift event log and whenever there will be any event/alarm or if we started our interact line this log file is updated or generated, so we need to monitor if below file is updating or new log file is generating then Support team should get the email
+
+PWD - /opt/swift/SNL/snl10072d1/log/events
+-rw-r--r--. 1 root root 3.4K Jul  4 23:47 Event160704.xml
+-rw-r--r--. 1 root root 3.4K Jul  5 23:41 Event160705.xml
+-rw-r--r--. 1 root root 6.0K Jul  6 23:54 Event160706.xml
+-rw-r--r--. 1 root root 3.4K Jul  7 23:50 Event160707.xml
 
 
+
+#### Script ### 
+
+#!/bin/bash
+
+if [ -f /opt/swift/SNL/*/log/events/SnlEvent$(date +'%y%m%d').xml ]; then
+   if  /bin/find /opt/swift/SNL/*/log/events/ -name SnlEvent$(date +'%y%m%d').xml -mmin -10 >/dev/null ; then 
+      ls -ltr /opt/swift/SNL/*/log/events/SnlEvent$(date +'%y%m%d').xml | /bin/mailx -s "$(hostname) : SnlEvent$(date +'%y%m%d').xml got updated" Support@emaildomain.com
+   fi
+fi
+
+### Set Crontab ##### 
+
+Put below in script and add that script to run every 10 mins.
+
+*/10 * * * * <script name>
 
