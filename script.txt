@@ -15,9 +15,9 @@ PWD - /opt/swift/SNL/snl10072d1/log/events
 
 #!/bin/bash
 
-if [ -f /opt/swift/SNL/*/log/events/SnlEvent$(date +'%y%m%d').xml ]; then
-   if  /bin/find /opt/swift/SNL/*/log/events/ -name SnlEvent$(date +'%y%m%d').xml -mmin -10 >/dev/null ; then 
-      ls -ltr /opt/swift/SNL/*/log/events/SnlEvent$(date +'%y%m%d').xml | /bin/mailx -s "$(hostname) : SnlEvent$(date +'%y%m%d').xml got updated" Support@emaildomain.com
+if [ -f /opt/swift/SNL/*/log/events/Event$(date +'%y%m%d').xml ]; then
+   if  /bin/find /opt/swift/SNL/*/log/events/ -name Event$(date +'%y%m%d').xml -mmin -10 >/dev/null ; then 
+      ls -ltr /opt/swift/SNL/*/log/events/Event$(date +'%y%m%d').xml | /bin/mailx -s "$(hostname) : Event$(date +'%y%m%d').xml got updated" Support@emaildomain.com
    fi
 fi
 
