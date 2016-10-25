@@ -1,7 +1,5 @@
-Bash script to re-ip 
+### Script to re-ip after the Sever Build ###  
 
-
-cat reip.sh
 #!/bin/bash
 
 if [ ! -z $1 ];then
