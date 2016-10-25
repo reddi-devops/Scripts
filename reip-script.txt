@@ -1,0 +1,72 @@
+Bash script to re-ip 
+
+
+cat reip.sh
+#!/bin/bash
+
+if [ ! -z $1 ];then
+  myhost=$1
+else
+  echo -n "Enter Hostname : "    ; read myhost
+fi
+grep -iw $myhost hostfile 2>/dev/null
+if [ $? = 0 ];then
+        myip=$(grep -iw $myhost hostfile | awk '{print $2}')
+        mynetmask=$(grep -iw $myhost hostfile | awk '{print $3}')
+        mygateway=$(grep -iw $myhost hostfile | awk '{print $4}')
+        mydomain=$(grep -iw $myhost hostfile  | awk '{print $5}')
+else
+        echo -n "Enter IP Address : "    ; read myip
+        echo -n "Enter Netmask : "       ; read mynetmask
+        echo -n "Enter Gateway : "       ; read mygateway
+        echo -n "Enter Domain(tsu/tsudev/d2c/ecx) : "       ; read mydomain
+fi
+
+echo "$myip     $myhost" >> /etc/hosts
+# Modifying the /etc/sysconfig/network
+sed -i "s;HOSTNAME=.*;HOSTNAME=$myhost;g" /etc/sysconfig/network
+sed -i "s;GATEWAY=.*;GATEWAY=$mygateway;g" /etc/sysconfig/network
+
+# Modifying the /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i "s;IPADDR=.*;IPADDR=$myip;g" /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i "s;NETMASK=.*;NETMASK=$mynetmask;g" /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i "s;GATEWAY=.*;GATEWAY=$mygateway;g" /etc/sysconfig/network-scripts/ifcfg-eth0
+
+
+# Copy the auto.nas and resolv.conf based on domain name.
+case $mydomain in
+  'tsu')
+        cp /etc/resolv.conf.tsu /etc/resolv.conf
+        cp /etc/auto.nas.tsu /etc/auto.nas
+        ;;
+  'tsudev')
+        cp -f /etc/resolv.conf.tsudev /etc/resolv.conf
+        cp -f /etc/auto.nas.tsudev /etc/auto.nas
+        ;;
+  'd2c')
+        cp -f /etc/resolv.conf.d2c /etc/resolv.conf
+        cp -f /etc/auto.nas.d2c /etc/auto.nas
+        ;;
+  'ecx')
+        cp -f /etc/resolv.conf.d2c /etc/resolv.conf
+        cp -f /etc/auto.nas.ecx /etc/auto.nas
+        ;;
+   *)
+       echo "Not specified correct domain"
+        ;;
+esac
+
+# Restart the Network.
+rm -f /etc/udev/rules.d/70-persistent-net.rules
+service network restart
+service autofs restart
+
+#ping the gateway
+ping -c5 $mygateway
+
+
+# Change the root password
+
+echo "Changing the root password"
+
+passwd root

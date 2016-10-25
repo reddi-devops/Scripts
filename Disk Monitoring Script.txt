@@ -1,0 +1,41 @@
+####The script which tests the disk usage and sends a report over to the mailid you specify in the scrip ###
+############################################################################################################
+
+
+#!/bin/bash
+
+MAILID="admin@emaildomain.com"
+
+VALUE=80
+
+SERVERNAME=$(hostname)
+
+MAIL=/bin/mail
+
+for line in $(df -hP | egrep '^/dev/' | awk '{ print $1 "_:_" $5 }')
+  do
+    FILESYSTEM=$(echo "$line" | awk -F"_:_" '{ print $1 }')
+    DISK_USAGE=$(echo "$line" | awk -F"_:_" '{ print $2 }' | cut -d'%' -f1 )
+
+    if [ $DISK_USAGE -ge $VALUE ];
+    then
+      EMAIL="$SERVERNAME - $(date): $FILESYSTEM Exceeded the threshold VALUE\n"
+      EMAIL="$EMAIL\n Usage Details\n Current Usage:($DISK_USAGE%) Threshold value: ($VALUE%)"
+      echo -e "$EMAIL" | $MAIL -s ""$SERVERNAME" Disk Usage Alert: Needs Attention!" "$MAILID"
+    elif [ $DISK_USAGE -lt $VALUE ];
+    then
+      EMAIL="$EMAIL\n$FILESYSTEM ($DISK_USAGE%) is lessthan the threshold ($VALUE%)"
+      EMAIL="$EMAIL\n"
+      echo -e "$EMAIL" | $MAIL -s ""$SERVERNAME" Disk Usage Alert: Threshold Not Reached" "$MAILID"
+  fi
+done
+
+
+---> Script Explanation ---> 
+
+Script gets the memory information using “df hP” command.
+The environment variable MAILID holds the email id in which the report has to be sent.
+VALUE holds the threshold you want to set.
+SERVERNAME holds the hostname of the server for server identification in the email notification.
+Using a for loop it will loop through all the filesystem which has “/dev” mount point. Then it gets the filesystem name and disk usage percentage to two variables FILESYSTEM and DISK_USAGE.
+Using the above variables the disk usage is equated with the threshold VALUE variable. Based on the result, an email will be sent to the specified id.

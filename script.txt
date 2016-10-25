@@ -1,0 +1,44 @@
+Put below in script and add that script to run every 10 mins.
+
+*/10 * * * * <script name>
+
+
+#!/bin/bash
+
+if [ -f /opt/swift/SNL/*/log/events/SnlEvent$(date +'%y%m%d').xml ]; then
+   if  /bin/find /opt/swift/SNL/*/log/events/ -name SnlEvent$(date +'%y%m%d').xml -mmin -10 >/dev/null ; then 
+      ls -ltr /opt/swift/SNL/*/log/events/SnlEvent$(date +'%y%m%d').xml | /bin/mailx -s "$(hostname) : SnlEvent$(date +'%y%m%d').xml got updated" RTM-Support@seic.com
+   fi
+fi
+
+
+
+
+From: Verma, Sagar X. 
+Sent: Friday, July 08, 2016 7:06 AM
+To: Gaddam, Rohit
+Cc: RTM-Support; Murthy, Suriya
+Subject: Script to Monitor Log Files | MT#4837821
+
+Hi Rohit,
+
+As discussed with Suriya, can you guys please help us to create a script to monitor that if any new file is generating or if latest log file is updating on below server and path -
+
+Server IP – 172.30.1.161
+Host Name - seipdsnlvm01.tsu.seic.com
+Path - /opt/swift/SNL/snl10072d1/log/events
+File Name - SnlEvent160707.xml
+
+Note – this log file is swift event log and whenever there will be any event/alarm or if we started our interact line this log file is updated or generated, so we need to monitor if below file is updating or new log file is generating then RTM Support team should get the email.
+
+Below is the sample logs from server 
+
+swnet@seipdsnlvm01.tsu.seic.com# pwd
+/opt/swift/SNL/snl10072d1/log/events
+
+-rw-r--r--. 1 swnet swnetg 3.4K Jul  4 23:47 SnlEvent160704.xml
+-rw-r--r--. 1 swnet swnetg 3.4K Jul  5 23:41 SnlEvent160705.xml
+-rw-r--r--. 1 swnet swnetg 6.0K Jul  6 23:54 SnlEvent160706.xml
+-rw-r--r--. 1 swnet swnetg 3.4K Jul  7 23:50 SnlEvent160707.xml
+
+We’ve raised a ticket MT# 4837821 for this.
