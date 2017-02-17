@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for file in /opt/jboss/standalone/log/server.log ; do
+   tac /opt/jboss/standalone/log/server.log | grep -m1 'Communications link failure' && echo $?
+   if [ $? = 0 ]
+   then
+   mv /opt/jboss/standalone/log/server.log /opt/jboss/standalone/log/server.log_$date
+   systemctl restart jboss
+   fi
+done
