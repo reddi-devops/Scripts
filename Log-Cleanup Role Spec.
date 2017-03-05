@@ -1,0 +1,18 @@
+Log-Cleanup Role Spec.
+
+
+Role usage: 
+
+     - { role: log-cleanup,
+          script_location: "",
+          log_directory: "",
+          log_regex: "",
+          max_uncompressed_age: "",
+          max_age: ""
+      }
+	  
+Will generate a scirpt like:
+
+#!/bin/bash
+/bin/find /var/log/tomcat6 -type f -regex '/var/log/tomcat6/.*log\.[0-9]+' -mtime +1 -exec gzip {} \;
+/bin/find /var/log/tomcat6/* -type f -mtime +7 -exec rm -rf {} \;
