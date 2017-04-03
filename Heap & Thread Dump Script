@@ -1,4 +1,4 @@
-########### JBoss jstack Thread / Jmap Heap Dumps ########### 
+########### JBoss/Weblogic jstack Thread / Jmap Heap Dumps ########### 
 #
 # Use this script to produce jstack and jmap dumps 
 # for the running JBoss/Weblogic process.
