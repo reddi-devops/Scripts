@@ -1,0 +1,81 @@
+########### JBoss jstack Thread / Jmap Heap Dumps ########### 
+#
+# Use this script to produce jstack and jmap dumps 
+# for the running JBoss/Weblogic process.
+#
+# Rohit Gaddam 03-30-17 
+#################################
+
+#!/bin/bash
+
+echo ""
+echo "This script will generate a set of diagnostic files for the running `echo $PROCNAME2` process."
+echo "It can take 5 minutes to generate the heap dump. Ctrl-C to break this script at any point."
+echo ""
+sleep 2
+echo "Waiting for 5 seconds before starting..."
+echo ""
+sleep 1
+
+# progress bar
+echo -ne '#####                     (1)\r'
+sleep 1
+echo -ne '#########                 (2)\r'
+sleep 1
+echo -ne '###############           (3)\r'
+sleep 1
+echo -ne '####################      (4)\r'
+sleep 1
+echo -ne '######################### (Starting)\r'
+echo -ne '\n'
+
+# gather variables
+PROCNAME="java"
+PROCNAME2="jboss"
+
+# add some more variables
+JBPID=`ps -ef | grep -i $PROCNAME | grep -i $PROCNAME2 | grep -v grep | awk {'print $2'} | head -1`
+TIMESTAMP001=`date +%F_%H%M%S`
+
+echo ""
+echo "The PID for `echo $PROCNAME2` is `echo $JBPID`."
+echo "Timestamp for new files will be `echo $TIMESTAMP001`."
+
+echo ""
+
+# test for jstacks dir
+if [ ! -d /opt/jstacks ]
+then
+    mkdir /opt/jstacks
+    chmod 755 /opt/jstacks
+fi
+
+# OS thread dump for jvm.log
+echo "Generating OS thread dump..."
+kill -3 $JBPID
+
+# jstack thread dump
+echo "Generating jstack thread dump..."
+/usr/java/jdk/bin/jstack -F $JBPID 2>&1 | cat > /opt/jstacks/$TIMESTAMP001-$HOSTNAME-jstack.thread
+chmod 644 /opt/jstacks/$TIMESTAMP001-$HOSTNAME-jstack.thread
+
+# jmap heap summary
+echo "Generating jmap heap summary..."
+/usr/java/jdk/bin/jmap -heap $JBPID 2>&1 | cat > /opt/jstacks/$TIMESTAMP001-jboss-jmap.summary
+
+# jmap heap dump
+echo "Generating jmap heap dump..."
+/usr/java/jdk/bin/jmap -F -dump:format=b,file=/opt/jstacks/$TIMESTAMP001-jboss-jmap.hprof $JBPID
+
+# compress heap dump
+echo "Compressing jmap heap dump to a more reasonable size..."
+gzip -v /opt/jstacks/$TIMESTAMP001-jboss-jmap.hprof
+
+echo ""
+echo "New jstack thread dump:"
+echo "/opt/jstacks/`echo $TIMESTAMP001`-`echo $HOSTNAME`-jstack.thread"
+echo ""
+echo "New jmap heap summary (ASCII), histogram (ASCII) and dump (Binary):"
+echo "/opt/jstacks/`echo $TIMESTAMP001`-`echo $HOSTNAME`-jmap.summary"
+echo "/opt/jstacks/`echo $TIMESTAMP001`-`echo $HOSTNAME`-jmap.histo"
+echo "/opt/jstacks/`echo $TIMESTAMP001`-`echo $HOSTNAME`-jmap.hprof.gz"
