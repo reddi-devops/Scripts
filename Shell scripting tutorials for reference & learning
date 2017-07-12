@@ -1,0 +1,805 @@
+ShellScripting
+
+#!bin/bash
+#This is my first real shell script. Madhur tutorial 19 :https://www.youtube.com/watch?v=x6hRT1VppAc&list=PL7B7FA4E693D8E790&index=18
+# Learning how to use to "read" command to get input from the user who executes the script. 
+echo "Hi, I am Marvin and you are ?"
+read user_name
+echo " Nice to meet you $user_name. How are you today ?"
+read user_response
+echo " That's good. I am doing $user_response as well. How can I help you today? "
+read user_response2
+echo " $user_response2 ? That's not what your mom said last night. Haha "
+
+=============================================================================================================
+#!/bin/bash
+#This is a script to chmod any file. Typical execution of this shell script is "sh thisscript.sh filename"
+chmod 744 $1
+ls -l $1
+
+
+=============================================================================================================
+# Demostrating the use of the reverse quote: `
+
+[root@kriss0262 shell_scripting]# echo " Yo mama so fat " >> test.txt
+[root@kriss0262 shell_scripting]# cat test.txt
+[root@kriss0262 shell_scripting]# Yo mama so fat
+[root@kriss0262 shell_scripting]# set `cat test.txt `
+#Using the reverse quote ` tells shell that you should assign the output of the `cat test` to set.
+[root@kriss0262 shell_scripting]# echo $1
+Yo
+[root@kriss0262 shell_scripting]# echo $2
+mama
+[root@kriss0262 shell_scripting]# echo $3
+so
+[root@kriss0262 shell_scripting]# echo $4
+fat
+[root@kriss0262 shell_scripting]# echo $*
+Yo mama so fat
+
+
+#Usage in a shell script:
+#!/bin/bash
+#This script should rename the file passed as an argument during the excution with an extension of the user's name
+name=$1  # The value of $1 is the filename argument passed by the user when he runs " sh scipt.sh filename"
+set `who am i`
+mv $name $name.$1
+=============================================================================================================
+
+#To check the number of positional parameters
+
+[root@kriss0262 shell_scripting]# echo $#
+0
+[root@kriss0262 shell_scripting]# set yo mama so fat
+[root@kriss0262 shell_scripting]#
+[root@kriss0262 shell_scripting]# echo $#
+4
+
+
+#Usage in a shell script 
+#!/bin/bash
+#This script will echo out the number of items in a directory that the script is run on. 
+echo The total number of items in the current directory is=$#
+
+Execution :
+[root@kriss0262 shell_scripting]#  si script.sh *
+The total number of items in the current directory is 17  
+
+=============================================================================================================
+
+#!/bin/bash
+#Arithmetic Operations. We need to use the " expr " command to let the shell know that these are not just statements but arithmetic expressions. We use the echo expr to print the value of the arthimetic expression 
+#Note that expr only works with integers. It will poop if you include decimals
+a=30 b=15
+echo `expr $a + $b`
+echo `expr $a - $b`
+echo `expr $a \* $b`     # We're using a \ here to let the shell know that it's not a wild card but multiplication.
+echo `expr $a / $b` 
+echo `expr $a % $b`
+
+=============================================================================================================
+
+# Note: BODMAS is used with expr. SO if you're using brackets/paranthesis, then we can to take it's special meaning away with a \
+#Operator Precidence https://www.youtube.com/watch?v=nqn2NLwb8cI&index=24&list=PL7B7FA4E693D8E790
+#Arithmetic Operations. So if you want to add b and c first in the below example you have to parenthesize it.
+#!/bin/bash
+a =30 b=15 c=2 d=5 
+#$a * $b + $c / $d
+echo `expr $a \* \( $b +$c \) / $d`
+
+=============================================================================================================
+
+#Floating Point Arithmetic. ( real numbers )
+# We need to use the bc program to calculate this instead of expr. So we export the values as new variables and then echo the result
+#/bin/bash
+a=10.5
+b=3.5
+c=`echo $a + $b | bc`
+d=`echo $a - $b | bc`
+e=`echo $a \* $b | bc`
+f=`echo $a / $b | bc`
+echo $c $d $e $f 
+
+=============================================================================================================
+# Escape Sequences
+echo " hey world. What's up ? "
+# now we wanna shenanigize it. 
+# 1 ) Let's pring hey world on one line and what's up on another 
+echo " hey world. \n What's up ? "  #\n stands for new line
+# 2 ) Let's use return 
+echo " hey world. \r What's up ? "  #\r  now we don't see hey world. we just see what's up ? \r re-writes what's echoed by bringing the cursor back to the first charachter.
+echo " hey world \t what's up ? "  # \t is tab. It just puts 5 spaces between the two phrases. you can put in two "\t\t" to give 10 spaces.
+echo " hey world \b what's up ? "  # \b is ONE back space. you can put in /b/b/b/b/b/b/b to go 7 spaces back and delete " world"
+echo "\033[1m hey world. what's up ?\033[0m"  # \033[1m  is to begin printing in bold and \033[0m to end printing in bold letters.
+echo "\033[7m hey world. what's up ?\033[0m"  # \033[7m is used to invert colors of your echo.
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=9WisxGxVzgM&list=PL7B7FA4E693D8E790&index=27
+# Using the 'tput' command. It's used for a lot of intersting things 
+#tput in action 
+#!bin/bash
+tput clear # the dollar prompt wont be displayed after the clear screen with tput.
+echo " Total number of rows on screen=\c"  # /c basically means suppress further output / don't output the trailing newline.
+tput lines # calculates the number of rows on your terminal
+echo " Total number of columns on screen=\c"
+tput cols  # calculates the number of columns on your terminal
+tput cup 15 20 # To send the cursor to the 15 row, 20th column 
+tput bold  # To instruct the terminal to print in bold
+echo " This should be in bold " # Testing the tput bold
+echo "\033[0mBye Bye"  # Killing the bold and echoing bye bye
+
+
+=============================================================================================================
+# https://www.youtube.com/watch?v=elN9wmcIumE&index=28&list=PL7B7FA4E693D8E790
+#NOTE: shell uses two numbers for commands. 0 if the command was executed successfully or 1 if it wasn't
+# Example
+[root@kriss0262 shell_scripting]# mkdir new
+[root@kriss0262 shell_scripting]# echo $?    # Shows if the command was executed successfullly
+0
+[root@kriss0262 shell_scripting]# mkdir new
+[root@kriss0262 shell_scripting]# echo $?
+1   										 # It's 1 because it was unable to create the new dir again 'coz it exists already
+
+# SELECTION CONSTRUCTS !! *************
+
+# IF-THEN statement in action
+echo " Please enter source and target file names "
+read source target
+if mv $source $target
+then
+echo " Your file has been successfullly renamed "
+fi 
+
+=============================================================================================================
+# https://www.youtube.com/watch?v=1s3r0Cnsy3U&list=PL7B7FA4E693D8E790&index=29
+
+# IF-THEN-ELSE statement in action
+echo " Please enter source and target file names "
+read source target
+if mv $source $target
+then
+echo " Your file has been successfullly renamed "
+else
+echo " your file was NOT renamed "
+fi 
+
+=============================================================================================================
+
+#https://www.youtube.com/watch?v=YhtHm9gyMxE&list=PL7B7FA4E693D8E790&index=30
+echo "Run Checks on Numbers"
+echo " Please enter a number between 10 and 20:\c"
+read num
+if [ $num -lt 10 ]   # lt here stands for less than. CHeck if the number is less than 10 
+	then 
+	echo " That was under the belt partner."
+elif [ $num -gt 20 ]   # CHeck if the number is greater than 10 . We use elif if you have more than one if statement. here 2 checks.
+	then 
+	echo " That went over my head. "
+else 
+	echo " That's in the sweet spot! "
+fi 
+
+echo " Like 'lt' (less than) and 'gt' (greater than), we can also use 'eq' ( equals ), le ( less than or equal to) "
+echo " ge ( greater than or equal to ), ne ( for not equal to ) "
+
+
+# This tutorial explains why -eq doesn't work really well with numbers. use = instead. 
+#https://www.youtube.com/watch?v=H-QPEjNri1U&list=PL7B7FA4E693D8E790&index=42
+#!/bin/bash
+
+a=4.5
+b=4.5
+# [$a -eq $b ]    # This will poop with an exit status 2 output instead of 0 'coz it's wrong.
+[ "$a" = "$b" ]
+echo $?    # This will return an exit status of 0 . 
+
+
+=============================================================================================================
+
+#https://www.youtube.com/watch?v=LGT3HaKg4lU&list=PL7B7FA4E693D8E790&index=31
+#file-test.sh
+#!/bin/bash
+echo "This tutorial is to Run checks on files"
+echo " Enter a name:\c"
+read fname
+if [ -f $fname ]  # -f is for file name. if you want to check directory it would be '-d'
+	then 
+	echo " you indeed entered a file name. "
+else 
+	echo " Don't provide me files that don't exist "
+fi
+
+echo " You have other options like -f and -d."
+echo " FOr example for character special files -c "
+echo " For block special files such as images/videos, use -b "
+echo " To check for read, write execute permissions -r -w -x  "
+echo " To check for file size -s " # This is going to check if the size is greater than 0. Basically means if file size is greater than 0
+
+=============================================================================================================
+# https://www.youtube.com/watch?v=VOAVGwPbwlI&list=PL7B7FA4E693D8E790&index=32
+echo " This is to Append Text to a file using shell script "
+#!/bin/bash
+echo " Enter file name:/c"
+read fname
+if [ -f $fname ]
+	then
+	if [ -w $fname ]
+		then 
+		echo " Type matter to apppend. To Quit press ctrl+d " # This is coz we're using the cat command to write.
+		cat >> $fname
+	else
+		echo " You do not have permission to write"
+	fi 
+fi
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=IIhh1e1fURU&list=PL7B7FA4E693D8E790&index=33
+
+echo "This is a tutorial to run checks on strings."
+#!/bin/bash
+#String Checks
+str1="Yo Mama"
+str2="so fat"
+str3=""  # Either double quotes with nothing in them OR leaving it empty after the "=", it creates a null variable.
+
+#Check if the strings match.
+[ "$str1" = "$str2" ]
+echo $?
+
+#Check to see if the strings don't match
+[ "$str1" != "$str2" ]
+echo $?
+
+#Check to see if any of the strings is greater than 0 or not.
+[ -n "$str1" ]
+echo $?
+
+#Check to see if the final string is a null string or not.
+
+[ -z "$str3" ]
+echo $?
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=t7pJDlAkgy4&index=34&list=PL7B7FA4E693D8E790
+#!/bin/bash
+echo " This is a tutorial for 'AND' logical operator whose symbol is -a "
+echo " Please enter a number between 50 and 100"
+read num
+if [ $num -le 100 -a $num -ge 50 ]
+then
+echo " You're within the 50-100 limit "
+else
+	echo "Please choose a number between 50 and 100"
+fi
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=B0tiwZQYBQA&index=35&list=PL7B7FA4E693D8E790
+#!/bin/bash
+echo"This is a tutorial to count the number of characters ina user's input in your script "
+echo "Please enter a character"
+read var
+[ `echo $var | wc -c` -eq 2]  # why the -eq 2 ? well if you do a read var on your command line, it will wat for your input and once you hit enter, it will take the enter into consideration. 
+then 
+echo " you entered a character"
+else
+	echo " you have entered an invalid input. Please entere A character "
+fi
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=vP8yT1Ni9JY&list=PL7B7FA4E693D8E790&index=36
+#!/bin/bash
+echo " This is a tutorial for  the OR logical operator. Checking if the character is a vowel or a consonent"
+echo " Please enter a lowercase vowel:/c"
+read var
+if [ `echo $var | wc -c` -eq  2 ]
+	then
+	if [ $var = a -o $var = e -o $var = i -o $var = o -o $var = u ]
+	echo "You entered a vowel "
+    else
+	echo "You didn't enter a vowel "
+    fi
+else
+	echo " invalid input "
+fi
+=============================================================================================================
+#https://www.youtube.com/watch?v=bVL9pDfvAMc&index=37&list=PL7B7FA4E693D8E790
+#!/bin/bash
+echo " This is a tutorial for 'case' statement "
+echo " Enter a character:/c"
+read var
+case $var in 
+	[a-z])
+       echo " You entered a lowercase alphabet"
+       ;;
+    [A-Z])
+	   echo "You entered an upppercase alphabet"
+	   ;;
+	[0-9])
+	   echo "You entered a digit"
+	   ;;
+	?)
+	   echo " You entered a special symbol"
+	   ;;
+	*)
+	   echo "You entered more than one character"
+	   ;;
+esac # just like fi is a close for if statement. esac is the close for case statement.
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=pyhzv8XZnww&index=38&list=PL7B7FA4E693D8E790
+#This is another case statement tutorial to check if the word begins with the vowel/digit/special caharacter.
+#!/bin/bash
+echo "Enter a word:/c"
+read word
+case $word  in
+	[aeiou]* | [AEIOU]*)  #Both ranges will be checked in a single case to see if the first character matches the vowel
+		echo "The word begins with a vowel"
+		;;
+	[0-9]* )
+		echo  "The word begins with a digit" # Checking to see if the first character is a digit. 
+		;;
+	*[0-9]) # Checking to see if the last character is a digit.
+		echo "The word ens with a digit"
+		;;
+	#To check if the word is three letter word. 
+	???)
+		echo " you entered a three lettered word"
+		;;
+	*) # Default case which will get executed if the above cases don't match/get executed.
+		echo " I don't know what you've entered. You cray cray "
+		;;
+esac
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=50UH6IPM1KE&list=PL7B7FA4E693D8E790&index=39
+#!/bin/bash
+echo "This is a WHILE loop tutorial. Print numbers from 1 to 10 on screen."
+# 1)You need to declare/initialize a control variable
+# 2)Then put in a test condition that the loop evaluates before each iteration
+# 3)To increment/decrement the value of control variable so the loop gets a fresh value before evaluating the test condition. 
+count=1
+while [ $count -le 10 ] # while count is less than or equal to 10
+do
+	echo $count
+	count=`expr $count + 1` 
+done
+# Output is numbers 1 - 10 
+=============================================================================================================
+#https://www.youtube.com/watch?v=UYjodeCOQRo&list=PL7B7FA4E693D8E790&index=40
+#!/bin/bash
+echo " This is an UNTIL loop tutorial. "
+# Until loop is slightly different from while loop. While block gets executed if the test condition in the square brackets is true.
+# Whereas the UNTIL loop, until block gets executed if the test condition is false.
+count=1
+until [ $count -ge 10 ] 
+do
+	echo $count
+	count=`expr $count + 1` 
+done
+# Output is  numbers 1 - 9. If you use -gt instead of -ge, it will output 1 - 10 
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=sIYmF32Ic8s&list=PL7B7FA4E693D8E790&index=41
+#!/bin/bash
+# For offers better syntax/mechanism. 
+#This is scanning for folders in the home folder and displays in the output. 
+echo " This is a FOR loop tutorial "
+for item in *
+do
+	if [ -d $item] # IF the item is a directory
+	then 
+		echo $item 
+	fi
+done
+# This will print out the list of directories. if I use the -f , then it prints the files.
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=bQ_yxb25wEk&index=43&list=PL7B7FA4E693D8E790  
+#!/bin/bash
+echo " Using Grep "
+# Created a text_file with a song lyrics.pink floyd- money :D
+# Grep is used to search for something
+ [root@kriss0262 shell_scripting]# grep money text_file  # use -i  to make it case insensitive. 
+ [root@kriss0262 shell_scripting]# grep -i money text_file
+ [root@kriss0262 shell_scripting]# grep -i -n money text_file   # use -n to get the line numbers of that specific grep result.
+ [root@kriss0262 shell_scripting]# grep -i -n -c money text_file  # use -c to count the lines that have the word. => 6 # number of lines that have the word money
+ [root@kriss0262 shell_scripting]# grep -i -n -c -v money text_file  #   -v tells grep to reverse the search.  => 46 # lines that dont have the word money
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=zro2K3hay3Y&index=45&list=PL7B7FA4E693D8E790
+#!/bin/bash
+echo "Internal field seperator explained."
+line="shell scripting is fun"
+set $line
+echo $1
+echo $2
+echo $3
+echo $4
+# checking to see how the positional parameters are being set. 
+#Now if I change the value 
+line="shell scripting is fun"
+IFS=:           # This will output the entire line as a sentence and then leave 3 lines under it empty. 
+set $line
+echo $1
+echo $2
+echo $3
+echo $4
+#Now if I change the value 
+line="shell:scripting:is:fun"
+IFS=:           # This will output each positional parameter in individual lines again. 
+set $line
+echo $1
+echo $2
+echo $3
+echo $4
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=Htv2kkKe-_g&list=PL7B7FA4E693D8E790&index=46
+# Grepping a value from the /etc/passwd 
+#!/bin/bash
+echo " /etc/passwd file explained. "
+echo "Please enter the username:\c"
+read logname
+line =`grep $logname /etc/passwd`
+IFS=:
+set $line
+echo "Username:$1"
+echo "UserID:$3"  # second files is always 'x' which is the encrypted password. No point showing just x so we are skipping it.
+echo "Group ID:$4"
+echo "Comment field:$5"
+echo "Home Folder:$6"
+echo "Deful shel:$7"
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=DJAgtcB9V54&list=PL7B7FA4E693D8E790&index=47
+# Switch the default input screen from the keyboard into a 'text.txt' file. 
+# we do that using the command exec
+#!/bin/bash
+echo "Enter a file name"
+read fname
+# now let's check if the input has more than 0 characters 
+if [ -z "$fname"]
+then
+	exit
+fi
+# tty is the command that contains the information of the current terminal setttings 
+terminal=`tty`
+
+# exec is the command to change the input screen
+exec < `$fname`
+
+count=1
+
+while read line 
+do
+	echo $count.$line
+	count=`expr $count + 1`
+done
+
+exec < $terminal
+
+# THIS prints out the line numbers for text files on screen.
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=jFxLzOVPTBc&list=PL7B7FA4E693D8E790&index=48
+#!/bin/bash
+echo "Sleep while you're at work lol. call the file sleep.sh"
+echo "Please enter a sentence:\c"
+read str
+for word in $str
+do
+	echo $word
+	sleep 2    # to produce the iteration delay. 
+done
+
+#This will print out each word in the sentence that you typed in a new line with 2 second delay for each word 
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=vliYprapjXY&index=49&list=PL7B7FA4E693D8E790
+echo " This is to count the number of words & sentences in a text file without using wc "
+echo " Enter a filename:\c"
+read fname
+
+terminal=`tty`
+
+exec < $fname
+#now initialize two variables
+nol=0  # number of lines
+now=0  # number of words
+
+while read line
+do
+	nol=`expr $nol +1`
+	set $line
+	now=`expr $now + $#`
+done
+
+echo " Number of lines:$nol"
+echo " Number of words:$now"
+
+exec < $terminal # coz terminal holds the older terminal file.
+# This will show u the number of lines and words in a file that you specify. 
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=RwDiD9Y4rB0&list=PL7B7FA4E693D8E790&index=50
+#!/bin/bash
+echo " Fetch and Redirect Man Pages of commands using 'for loop' "
+# Create two files. 1) Commandlist file with a few linux commands 2) the help.sh script that we're making.
+# let's use cat date cal touch   in teh commandlist text file.
+for cmd in `cat commandlist`
+do
+	man $cmd >> helpfile  # we're using the double redirectional because we need it to append the file. 
+done
+
+# This puts the values of the man outputs into the helpfile for the commands.
+=============================================================================================================
+#https://www.youtube.com/watch?v=WLoLcl1pTS0&list=PL7B7FA4E693D8E790&index=51
+#!/bin/bash
+echo " Learning Nested Loops. Calling the script file pattern.sh "
+a=1
+while [ $a -le 3 ]
+do
+	b=1
+	while [ $b -le 3 ]
+	do
+		c=1
+		while [ $c -le 3 ]
+		do
+			echo "$a$b$c"
+			c=`expr $c + 1`
+		done
+		b=`expr $b + 1`
+	done 
+	a=`expr $a + 1`
+done
+
+# This will print 27 numbers in each line on screen. 111 112 113 121 122 123 131 132 133 211 212 213 221 222 223 231 232 233 311 312 313 321 322 323 331 332 333
+# All three digit combination of the numbers 1 2 and 3 are printed. 
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=60kgR8mLac8&index=52&list=PL7B7FA4E693D8E790
+#!/bin/bash
+echo "Learning the 'break' command"
+count=1
+while [ $count -le 10 ]
+do
+	echo $count
+	count=`expr $count + 1`
+done
+
+echo " we're out of the loop "
+
+# This will print numbers 1 to 10 in each line and echo out we're out of the loop. 
+
+#Now ;ets see how break works.
+#!/bin/bash
+echo "Learning the 'break' command"
+count=1
+while [ $count -le 10 ]
+do
+	if [ $count -eq 6]
+		then
+		break
+	fi
+
+	echo $count
+	count=`expr $count + 1`
+done
+
+echo " we're out of the loop "
+# Now you see numbers 1-5 and says that you're out of the loop. The break statement forces the loop to stop working. 
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=sx4_7-amjF0&list=PL7B7FA4E693D8E790&index=53
+#!/bin/bash
+echo "Let's learn the continue statement. Let's call it continue.sh"
+count=0
+while [ $count -le 9 ]
+do
+	count=`expr $count + 1`
+	if [ $count -eq 5 ]
+		then
+		continue
+	fi
+	echo $count
+done
+
+echo " we're out of the loop "
+# I see the output is 1 -4 and 6-10 but not the number 5. 
+# here by using continue, when it reaches 5, it skips the loop and then continues looping. So 5 gets missed. :D 
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=moRVYU-fpXw&index=54&list=PL7B7FA4E693D8E790
+echo " Learning metacharacters "
+[root@kriss0262 shell_scripting]#  ls cal banner "hello"   # THis wont work because we need ; to seperate the commands. 
+[root@kriss0262 shell_scripting]# cat moneysong.txt 
+
+[root@kriss0262 shell_scripting]# grep -i money moneysong.txt  > pattern && echo " The task was completed. "
+[root@kriss0262 shell_scripting]# cat pattern 
+[root@kriss0262 shell_scripting]# ## This has the lines in which money was part of the line. 
+
+[root@kriss0262 shell_scripting]#    || is the opposite of &&   # it's the OR command. 
+
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=AfsCD_2HaYo&list=PL7B7FA4E693D8E790&index=56
+#!/bin/bash
+echo " Know when users log in "
+echo " Please Enter Username:/c"
+read logname
+
+time=0
+while true  # This you do when you do some sort of termination/exit/break. If you don't it will go on for ever until it encounters an exit statement. 
+do
+	who | grep "$logname " > /dev/null #who shows .. who is logged in. And when the user is found, the if block gets triggered.
+	if [ $? -q 0 ]  # test condition for the if block. If the value exit statement is 0 ( which means if the user is found )
+		then
+		echo "$logname has logged in" 
+		if [ $time -ne 0 ] # ne = not equal to. 
+			then
+			echo " $logname was $time minutes late in logging in "
+		fi
+		exit # this statement is part of the outer IF block.
+	else
+		time=`expr $time + 1`  # if the user is not logged in, increment the time by 1 second and sleep for 60 seconds before running the loop again.
+		sleep 60
+	fi
+done
+# sh check.sh  => enter username: blahuser.
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=F9aqWi0bON0&index=57&list=PL7B7FA4E693D8E790
+#Enhance the previous script for finding out the logged in user.
+#!/bin/bash
+echo " Know when users log in "
+echo " Please Enter Username:/c"
+read logname
+
+grep "$logname" /etc/passwd > /dev/null
+if [ $? -eq 0 ]
+	then
+	echo " Wait...... "
+else
+	echo " user not found "  # This is if the user does not exist.
+	exit
+fi
+
+time=0
+while true  # This you do when you do some sort of termination/exit/break. If you don't it will go on for ever until it encounters an exit statement. 
+do
+	who | grep "$logname " > /dev/null #who shows .. who is logged in. And when the user is found, the if block gets triggered.
+	if [ $? -q 0 ]  # test condition for the if block. If the value exit statement is 0 ( which means if the user is found )
+		then
+		echo "$logname has logged in" 
+		if [ $time -ne 0 ] # ne = not equal to. 
+			then
+			echo " $logname was $time minutes late in logging in "
+		fi
+		exit # this statement is part of the outer IF block.
+	else
+		time=`expr $time + 1`  # if the user is not logged in, increment the time by 1 second and sleep for 60 seconds before running the loop again.
+		sleep 60
+	fi
+done
+# sh check.sh  => enter username: blahuser.
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=v9nZWXQCFcE&list=PL7B7FA4E693D8E790&index=58
+#Enhance the previous script FINAL !!!!!! .
+#!/bin/bash
+echo " Know when users log in "
+echo " Please Enter Username:/c"
+read logname
+
+grep "$logname" /etc/passwd > /dev/null
+if [ $? -eq 0 ]
+	then
+	echo " Wait...... "
+else
+	echo " user not found "  # This is if the user does not exist.
+	exit
+fi
+
+time=0
+while true  # This you do when you do some sort of termination/exit/break. If you don't it will go on for ever until it encounters an exit statement. 
+do
+	who | grep "$logname " > /dev/null #who shows .. who is logged in. And when the user is found, the if block gets triggered.
+	if [ $? -q 0 ]  # test condition for the if block. If the value exit statement is 0 ( which means if the user is found )
+		then
+		echo "$logname has logged in" 
+		if [ $time -ne 0 ] # ne = not equal to. 
+			then
+			# echo " $logname was $time minutes late in logging in "    TAKING THIS STATEMENT OUT to get the value of seconds.
+			if [ $time -gt 60 ]
+				then
+				min=`expr $time / 60`  # If the value is 2.6 seconds, it will only show 2.
+				sec=`expr $time % 60`  # This is to get the remainder of the 2.6 :D 
+				echo " $logname was $min minutes and $sec seconds later in logging in "
+			else
+				sec=$time
+				echo "$logname was $sec seconds late in logging in."
+			fi
+		fi
+		exit # this statement is part of the outer IF block.
+	else
+		time=`expr $time + 1`  # if the user is not logged in, increment the time by 1 second and sleep for 60 seconds before running the loop again.
+		sleep 1  # This is going to check every one second instead of 60 seconds like the previous one.
+	fi
+done
+# sh check.sh  => enter username: blahuser.
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=BSFUJVHoJ7A&index=59&list=PL7B7FA4E693D8E790
+#!/bin/bash
+echo " Use the 'write' command to communicate with other users" 
+# The recipient user Must be logged in
+# The recipient user Must have `message reception` enabled
+[root@kriss0262 shell_scripting]# write newuser2 # the newuser2 is the username of the person.
+# IN ANOTHER WINDOW log in as newuser2
+[root@newuser2 shell_scripting]# mesg y
+
+[root@kriss0262 shell_scripting]# write newuser2
+#Hey, what's up ?
+#I should have sent an email instead. 
+#CTRL + D
+# The user will get the EOF. 
+
+
+echo " using the FINGER COMMAND"
+[root@kriss0262 shell_scripting]# finger 
+# This shows the users logged in, names of users, terminal IDs and login time. * next to the terminal ID means the user has disabled messaging.
+[root@kriss0262 shell_scripting]# mesg  
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=Ho0sf54Kbr8&index=60&list=PL7B7FA4E693D8E790
+echo " Create your own commands using Functions "
+# We wont be executing this like any other shell scripts since that will be executed in a new shell that was invoked.
+# So we need to make the script executable
+youtube()
+{
+	echo "Good Morning. "
+}
+byebye()
+{
+	cal
+}
+
+[root@kriss0262 shell_scripting]# chmod +x func.sh
+[root@kriss0262 shell_scripting]# .func.sh
+[root@kriss0262 shell_scripting]# youtube
+Good Morning
+[root@kriss0262 shell_scripting]#byebye
+# THIS SHOWS THE CALENDER
+
+# IF you want to remove the function..   [root@kriss0262 shell_scripting]# unset youtube  # as simple as that. 
+
+=============================================================================================================
+#https://www.youtube.com/watch?v=3dqR9W7FKB4&index=61&list=PL7B7FA4E693D8E790
+# We are creating 3 shell scripts to use one amongst the other. basically executing one script inside another script.
+
+#!/bin/bash
+echo "This is script1.sh"
+banner "script1"
+
+sh script2.sh
+
+
+#!/bin/bash
+echo "This is script2.sh"
+banner " script2 "
+
+sh script3.sh
+
+
+#!/bin/bash
+echo "This is script3.sh"
+banner "script3"
+
+
+[root@kriss0262 shell_scripting]# sh script1.sh
+# THIS ECHOES ALL THREE BANNERS  one after the other.
+
+=============================================================================================================
+Sign up for free to join this conversation on GitHub. Already have an account? Sign in to comment
+Contact GitHub API Training Shop Blog About
+© 2017 GitHub, Inc. Terms Privacy Security Status Help
